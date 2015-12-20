@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+
+	<context:component-scan base-package="com.atguigu.shiro">
+		<context:exclude-filter type="annotation"
+			expression="org.springframework.stereotype.Controller" />
+		<context:exclude-filter type="annotation"
+			expression="org.springframework.web.bind.annotation.ControllerAdvice" />
+	</context:component-scan>
+
+	<!-- 配置 CacheManager -->
+	<bean id="cacheManager" class="org.apache.shiro.cache.ehcache.EhCacheManager">
+		<property name="cacheManagerConfigFile" value="classpath:ehcache-shiro.xml"></property>
+	</bean>
+
+	<!-- 配置 SecurityManager -->
+	<bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+		<property name="cacheManager" ref="cacheManager"></property>
+		<property name="realm" ref="myRealm"></property>
+	</bean>
+
+	<!-- 配置 LifecycleBeanPostProcessor. 可以自动的调用 Shiro 对象中的 init-method 和 destroy-method -->
+	<bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor">
+	</bean>
+
+	<!-- 可以使 Shiro 的注解起作用. 前提是必须先配置 LifecycleBeanPostProcessor -->
+	<bean
+		class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"
+		depends-on="lifecycleBeanPostProcessor" />
+	<bean
+		class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+		<property name="securityManager" ref="securityManager"></property>
+	</bean>
+
+	<!-- 配置 ShiroFilter -->
+	<bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+		<!-- 配置 securityManager 属性 -->
+		<property name="securityManager" ref="securityManager"></property>
+		<property name="loginUrl" value="/login.jsp"></property>
+		<property name="successUrl" value="/success.jsp"></property>
+		<property name="unauthorizedUrl" value="/unauthorized.jsp"></property>
+		<property name="filterChainDefinitions">
+			<value>
+				/login.jsp = anon
+				/success.jsp = anon
+				/unauthorized.jsp = anon
+				/shiro-login = anon
+				/shiro-logout = logout
+				/user.jsp = roles[user]
+                /admin.jsp = roles[admin]
+
+				/** = authc
+			</value>
+		</property>
+	</bean>
+
+</beans>
