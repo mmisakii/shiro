@@ -38,6 +38,7 @@ public class MyRealm extends AuthenticatingRealm {
 		String realmName = getName();
 		SimpleAuthenticationInfo info = new SimpleAuthenticationInfo(principal,
 				hashedCredentials, credentialsSalt, realmName);
+		System.out.println("hello git");
 		return info;
 	}
 
